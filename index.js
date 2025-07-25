@@ -58,6 +58,6 @@ const upload = multer({ storage });
 const articulosRouter = require('./routes/articulos');
 app.use('/api/articulos', articulosRouter(db, upload));
 
-app.listen(PORT, () => {
-  console.log(`Servidor backend escuchando en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor backend escuchando en http://0.0.0.0:${PORT}`);
 });
