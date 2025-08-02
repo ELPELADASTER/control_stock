@@ -3,6 +3,7 @@ const cors = require('cors');
 const multer = require('multer');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -19,6 +20,12 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Asegurarse de que el directorio 'uploads' exista
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
 
 // Inicializar base de datos en carpeta 'datos'
 const dbPath = path.join(__dirname, 'datos', 'articulos.db');
