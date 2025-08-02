@@ -35,7 +35,12 @@ module.exports = (db, upload) => {
     }
     db.all(sql, params, (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
-      res.json(rows);
+      // Normalizar el campo imagen para nunca devolver 'undefined' como string
+      const normalizados = rows.map(row => ({
+        ...row,
+        imagen: (!row.imagen || row.imagen === 'undefined' || row.imagen === '') ? null : row.imagen
+      }));
+      res.json(normalizados);
     });
   });
 
