@@ -3,9 +3,8 @@ module.exports = (db) => {
   const router = express.Router();
 
   // Crear artículo
-  router.post('/', upload.single('imagen'), (req, res) => {
+  router.post('/', (req, res) => {
     const { nombre, cantidad, empresa, simbolo } = req.body;
-    // Validación estricta de nombre y cantidad
     if (!nombre || cantidad === undefined || cantidad === null || cantidad === '' || isNaN(Number(cantidad)) || Number(cantidad) <= 0) {
       return res.status(400).json({ error: 'Nombre y cantidad (mayor a 0) son requeridos y cantidad debe ser un número válido.' });
     }
@@ -14,9 +13,10 @@ module.exports = (db) => {
     const disponibles = cantidadNum;
     const now = new Date().toISOString();
     const empresaFinal = empresa && (empresa === 'Telecom' || empresa === 'Pago Online') ? empresa : 'Telecom';
-    db.run('INSERT INTO articulos (nombre, cantidad, utilizados, disponibles, imagen, created_at, updated_at, empresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [nombre, cantidadNum, utilizados, disponibles, imagen, now, now, empresaFinal], function(err) {
+    const simboloFinal = simbolo || '📦';
+    db.run('INSERT INTO articulos (nombre, cantidad, utilizados, disponibles, simbolo, created_at, updated_at, empresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [nombre, cantidadNum, utilizados, disponibles, simboloFinal, now, now, empresaFinal], function(err) {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID, nombre, cantidad: cantidadNum, utilizados, disponibles, simbolo, created_at: now, updated_at: now, empresa: empresaFinal });
+      res.json({ id: this.lastID, nombre, cantidad: cantidadNum, utilizados, disponibles, simbolo: simboloFinal, created_at: now, updated_at: now, empresa: empresaFinal });
     });
   });
 
@@ -65,7 +65,7 @@ module.exports = (db) => {
   });
 
   // Editar artículo
-  router.put('/:id', upload.single('imagen'), (req, res) => {
+  router.put('/:id', (req, res) => {
     const { nombre, cantidad, utilizados, empresa, simbolo } = req.body;
     const id = req.params.id;
     const now = new Date().toISOString();
@@ -73,12 +73,11 @@ module.exports = (db) => {
       if (err) return res.status(500).json({ error: err.message });
       if (!row) return res.status(404).json({ error: 'Artículo no encontrado' });
       const newSimbolo = simbolo || row.simbolo || '📦';
-      // Conversión segura a número
       const nuevaCantidad = cantidad !== undefined ? Number(cantidad) : row.cantidad;
       const nuevosUtilizados = utilizados !== undefined ? Number(utilizados) : row.utilizados;
       const nuevosDisponibles = nuevaCantidad - nuevosUtilizados;
       const empresaFinal = empresa && (empresa === 'Telecom' || empresa === 'Pago Online') ? empresa : row.empresa || 'Telecom';
-      db.run('UPDATE articulos SET nombre = ?, cantidad = ?, utilizados = ?, disponibles = ?, imagen = ?, updated_at = ?, empresa = ? WHERE id = ?', [
+      db.run('UPDATE articulos SET nombre = ?, cantidad = ?, utilizados = ?, disponibles = ?, simbolo = ?, updated_at = ?, empresa = ? WHERE id = ?', [
         nombre || row.nombre,
         nuevaCantidad,
         nuevosUtilizados,
