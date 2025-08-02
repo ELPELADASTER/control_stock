@@ -60,17 +60,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 // Configuración de Multer para imágenes (guardar en 'uploads/' relativo a backend)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, 'uploads'));
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage });
-
-// Rutas
+// Configuración de Multer para Cloudinary
+const upload = require('./multerCloudinary');
 const articulosRouter = require('./routes/articulos');
 app.use('/api/articulos', articulosRouter(db, upload));
 

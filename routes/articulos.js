@@ -8,7 +8,8 @@ module.exports = (db, upload) => {
   // Crear artículo
   router.post('/', upload.single('imagen'), (req, res) => {
     const { nombre, cantidad, empresa } = req.body;
-    const imagen = req.file ? `/uploads/${req.file.filename}` : null;
+    // Guardar la URL de Cloudinary si hay imagen
+    const imagen = req.file ? req.file.path : null;
     // Validación estricta de nombre y cantidad
     if (!nombre || cantidad === undefined || cantidad === null || cantidad === '' || isNaN(Number(cantidad)) || Number(cantidad) <= 0) {
       return res.status(400).json({ error: 'Nombre y cantidad (mayor a 0) son requeridos y cantidad debe ser un número válido.' });
@@ -75,7 +76,7 @@ module.exports = (db, upload) => {
     const id = req.params.id;
     let imagen = null;
     if (req.file) {
-      imagen = `/uploads/${req.file.filename}`;
+      imagen = req.file.path;
     }
     const now = new Date().toISOString();
     db.get('SELECT * FROM articulos WHERE id = ?', [id], (err, row) => {
