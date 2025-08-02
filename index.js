@@ -1,7 +1,5 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
@@ -38,7 +36,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
     cantidad INTEGER NOT NULL,
     utilizados INTEGER NOT NULL DEFAULT 0,
     disponibles INTEGER NOT NULL,
-    imagen TEXT,
+    simbolo TEXT,
     created_at TEXT DEFAULT (datetime('now', 'localtime')),
     updated_at TEXT DEFAULT (datetime('now', 'localtime'))
   )`, (err) => {
@@ -55,16 +53,21 @@ const db = new sqlite3.Database(dbPath, (err) => {
             console.log("Columna 'empresa' agregada a articulos");
           });
         }
+        const hasSimbolo = columns.some(col => col.name === 'simbolo');
+        if (!hasSimbolo) {
+          db.run("ALTER TABLE articulos ADD COLUMN simbolo TEXT;", (err) => {
+            if (err) throw err;
+            console.log("Columna 'simbolo' agregada a articulos");
+          });
+        }
       });
     });
   });
 });
 
-// Configuración de Multer para imágenes (guardar en 'uploads/' relativo a backend)
-// Configuración de Multer para Cloudinary
-const upload = require('./multerCloudinary');
+// Rutas sin lógica de imágenes
 const articulosRouter = require('./routes/articulos');
-app.use('/api/articulos', articulosRouter(db, upload));
+app.use('/api/articulos', articulosRouter(db));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor backend escuchando en http://0.0.0.0:${PORT}`);
