@@ -89,6 +89,20 @@ const db = new sqlite3.Database(dbPath, (err) => {
       console.log("Tabla 'cargas_maquinas' creada o ya existe");
     });
     
+    // Crear tabla de conteos de vasos
+    db.run(`CREATE TABLE IF NOT EXISTS conteos_vasos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      maquina_id INTEGER NOT NULL,
+      cantidad_vasos INTEGER NOT NULL,
+      fecha_conteo TEXT DEFAULT (datetime('now', 'localtime')),
+      observaciones TEXT,
+      empresa TEXT DEFAULT 'Telecom',
+      FOREIGN KEY (maquina_id) REFERENCES maquinas(id)
+    )`, (err) => {
+      if (err) throw err;
+      console.log("Tabla 'conteos_vasos' creada o ya existe");
+    });
+    
     // Verificar columnas existentes en articulos
     db.get("PRAGMA table_info(articulos);", (err, row) => {
       if (err) throw err;
@@ -124,6 +138,13 @@ app.use('/api/maquinas', maquinasRouter(db));
 // Rutas para cargas de máquinas
 const cargasRouter = require('./routes/cargas');
 app.use('/api/cargas', cargasRouter(db));
+
+// Rutas para estadísticas y conteos
+const estadisticasRouter = require('./routes/estadisticas');
+app.use('/api/estadisticas', estadisticasRouter(db));
+
+const conteosRouter = require('./routes/conteos');
+app.use('/api/conteos', conteosRouter(db));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor backend escuchando en http://0.0.0.0:${PORT}`);
